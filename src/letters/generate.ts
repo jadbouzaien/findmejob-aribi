@@ -26,6 +26,8 @@ export interface LetterJob {
 
 type Lang = "fr" | "en";
 
+const ME_NAME = process.env.ME_NAME || "Prénom Nom";
+
 /** Coordonnées lues depuis .env (jamais dans le code versionné) */
 function contactLine(fr: boolean) {
   const e = process.env;
@@ -78,7 +80,7 @@ function pickProofs(text: string, track: TrackId | null) {
     .map((x) => x.p);
 }
 
-/** Compétences que Jad maîtrise ET que l'offre mentionne, dans l'ordre où l'offre les cite */
+/** Compétences que le candidat maîtrise ET que l'offre mentionne, dans l'ordre où l'offre les cite */
 function skillsFromOffer(text: string, lang: Lang) {
   return MY_SKILLS.map(([re, label]) => ({ label, idx: text.search(re) }))
     .filter((x) => x.idx >= 0)
@@ -144,7 +146,7 @@ function letterHtml(job: LetterJob) {
   const fr = l.lang === "fr";
   const date = new Date().toLocaleDateString(fr ? "fr-FR" : "en-GB", { day: "numeric", month: "long", year: "numeric" });
   const [intro, proofsLead, ...rest] = l.proofs.length ? l.paragraphs : [l.paragraphs[0], null, ...l.paragraphs.slice(1)];
-  const docTitle = `${fr ? "Lettre de motivation" : "Cover letter"} – Jad Bouzaien – ${l.company} – ${l.title}`;
+  const docTitle = `${fr ? "Lettre de motivation" : "Cover letter"} – ${ME_NAME} – ${l.company} – ${l.title}`;
   return `<!doctype html><html lang="${l.lang}"><head><meta charset="utf-8"><title>${esc(docTitle)}</title><style>
   @page { size: A4; margin: 0; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -163,7 +165,7 @@ function letterHtml(job: LetterJob) {
   .sign { margin-top: 8mm; font-weight: 600; color: #2c3e50; }
 </style></head><body>
   <div class="head">
-    <h1>Jad (Mohamed) Bouzaien</h1>
+    <h1>${esc(ME_NAME)}</h1>
     <div class="sub">${esc(l.title)}</div>
     <div class="contact">${esc(contactLine(fr))}</div>
   </div>
@@ -177,7 +179,7 @@ function letterHtml(job: LetterJob) {
   ${proofsLead ? `<p>${esc(proofsLead)}</p><ul>${l.proofs.map((p) => `<li>${esc(p)}</li>`).join("")}</ul>` : ""}
   ${rest.map((p) => `<p>${esc(p as string)}</p>`).join("")}
   <p>${fr ? "Je vous prie d'agréer, Madame, Monsieur, l'expression de mes salutations distinguées." : "Kind regards,"}</p>
-  <div class="sign">Jad Bouzaien</div>
+  <div class="sign">${esc(ME_NAME)}</div>
 </body></html>`;
 }
 
@@ -191,7 +193,7 @@ const slug = (s: string) =>
 
 export async function letterPdf(job: LetterJob): Promise<{ pdf: Buffer; filename: string; lang: Lang }> {
   const { lang, title, company } = buildLetter(job);
-  const name = `${lang === "fr" ? "LM" : "Cover_Letter"}_Jad_Bouzaien_${slug(company)}_${slug(title)}`;
+  const name = `${lang === "fr" ? "LM" : "Cover_Letter"}_${slug(ME_NAME)}_${slug(company)}_${slug(title)}`;
   const dir = await mkdtemp(join(tmpdir(), "letter-"));
   try {
     const html = join(dir, `${name}.html`);

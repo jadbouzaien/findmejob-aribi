@@ -100,9 +100,9 @@ The scoring rules, labels and comments are written in French, since the tool is 
 ```bash
 cp .env.example .env         # then fill in the Postgres password, Telegram token, contact details, salary
 npm install
-docker compose up -d db      # PostgreSQL (port 5433, localhost only)
+docker compose up -d db      # PostgreSQL (port 5434, localhost only)
 npm run worker               # collection + scoring + Telegram bot
-npm run dev                  # dashboard → http://localhost:3100
+npm run dev                  # dashboard → http://localhost:3101
 ```
 
 Everything in Docker (home server):

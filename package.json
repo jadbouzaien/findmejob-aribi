@@ -1,12 +1,12 @@
 {
-  "name": "find-me-job",
+  "name": "find-me-job-pote",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev -p 3100",
+    "dev": "next dev -p 3101",
     "build": "next build",
-    "start": "next start -p 3100",
+    "start": "next start -p 3101",
     "worker": "tsx src/worker/index.ts",
     "once": "tsx src/scripts/run-once.ts",
     "rescore": "tsx src/scripts/rescore.ts",
