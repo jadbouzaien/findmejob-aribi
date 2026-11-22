@@ -4,6 +4,7 @@ import { runSource } from "./pipeline";
 import { startTelegramPolling, sendDigest, sendText } from "../notify/telegram";
 import { env } from "../lib/env";
 import { refreshFreshness } from "../scoring/freshness";
+import { TIMEZONE } from "../../config/profile";
 
 const DIGEST_HOURS = [9, 18];
 
@@ -38,9 +39,9 @@ async function main() {
     setTimeout(loop, i * 3000);
   });
 
-  // Récap P2 à 9h et 18h (heure de Paris)
+  // Récap P2 à 9h et 18h (heure de Dubaï)
   setInterval(async () => {
-    const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Europe/Paris" }));
+    const now = new Date(new Date().toLocaleString("en-US", { timeZone: TIMEZONE }));
     if (!DIGEST_HOURS.includes(now.getHours())) return;
     const key = `${now.toDateString()}-${now.getHours()}`;
     if ((await getSetting("last_digest")) === key) return;

@@ -14,6 +14,8 @@ export const env = {
   telegramToken: process.env.TELEGRAM_BOT_TOKEN ?? "",
   telegramChatId: process.env.TELEGRAM_CHAT_ID ?? "",
   dashboardUrl: process.env.DASHBOARD_URL ?? "http://localhost:3101",
-  franceTravailId: process.env.FRANCE_TRAVAIL_CLIENT_ID ?? "",
-  franceTravailSecret: process.env.FRANCE_TRAVAIL_CLIENT_SECRET ?? "",
+  /** Careerjet (agrégateur, couvre les Émirats) : identifiant partenaire gratuit sur careerjet.com/partners */
+  careerjetAffid: process.env.CAREERJET_AFFID ?? "",
+  /** Doit correspondre au site déclaré chez Careerjet (sans port : un Referer avec port est refusé) */
+  careerjetReferer: process.env.CAREERJET_REFERER || "http://localhost/",
 };

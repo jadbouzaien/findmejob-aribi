@@ -7,10 +7,10 @@ create table if not exists jobs (
   company          text,
   location         text,
   work_mode        text,          -- onsite | hybrid | remote | unknown
-  zone             text,          -- home | near | france | foreign | remote | unknown
+  zone             text,          -- home | near | country | far | foreign | unknown
   description      text,
-  salary_min_eur   integer,
-  salary_max_eur   integer,
+  salary_min_eur   integer,       -- nom historique : salaire MENSUEL en AED
+  salary_max_eur   integer,       -- idem
   salary_text      text,
   posted_at        timestamptz,
   first_seen_at    timestamptz not null default now(),

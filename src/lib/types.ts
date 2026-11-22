@@ -1,5 +1,5 @@
 export type WorkMode = "onsite" | "hybrid" | "remote" | "unknown";
-export type Zone = "home" | "near" | "france" | "foreign" | "unknown";
+export type Zone = "home" | "near" | "country" | "far" | "foreign" | "unknown";
 export type SalaryPeriod = "year" | "month" | "day" | "hour";
 
 /** Offre normalisée renvoyée par chaque source */

@@ -3,8 +3,9 @@ import type { RawJob, Source } from "../lib/types";
 import { dedupKey } from "../lib/text";
 import { scoreJob, freshnessAdjust, finalScore, priorityFor } from "../scoring/score";
 import { notifyJob } from "../notify/telegram";
+import { TIMEZONE } from "../../config/profile";
 
-const log = (msg: string) => console.log(`[${new Date().toLocaleTimeString("fr-FR")}] ${msg}`);
+const log = (msg: string) => console.log(`[${new Date().toLocaleTimeString("fr-FR", { timeZone: TIMEZONE })}] ${msg}`);
 
 /** Notifier seulement les offres récentes (évite d'alerter sur une vieille offre découverte tard) */
 const MAX_NOTIFY_AGE_H = 72;
@@ -61,7 +62,7 @@ export async function ingest(raws: RawJob[], seeding: boolean) {
                   priority = ${priorityFor(finalScore(s.score, freshnessAdjust(raw.postedAt)), s.excluded)},
                   final_score = ${finalScore(s.score, freshnessAdjust(raw.postedAt))},
                   excluded = ${s.excluded}, exclusion_reason = ${s.exclusionReason},
-                  work_mode = ${s.workMode}, salary_min_eur = ${s.salaryMinEur}, salary_max_eur = ${s.salaryMaxEur},
+                  work_mode = ${s.workMode}, salary_min_eur = ${s.salaryMin}, salary_max_eur = ${s.salaryMax},
                   score_details = ${sql.json(s.details as never)} where id = ${existing[0].id}`;
       }
       continue;
@@ -88,8 +89,8 @@ export async function ingest(raws: RawJob[], seeding: boolean) {
         work_mode: s.workMode,
         zone: s.zone,
         description: raw.description,
-        salary_min_eur: s.salaryMinEur,
-        salary_max_eur: s.salaryMaxEur,
+        salary_min_eur: s.salaryMin,
+        salary_max_eur: s.salaryMax,
         salary_text: raw.salaryText ?? null,
         posted_at: posted,
         dedup_key: key,

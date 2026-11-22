@@ -70,7 +70,7 @@ function formatJob(j: JobRow) {
     `${PRIO_EMOJI[j.priority ?? ""] ?? "⚪"} <b>${j.priority ?? "—"} · ${j.final_score}%</b> <i>(fit ${j.score} ${j.fresh_adj >= 0 ? "+" : "−"} ${Math.abs(j.fresh_adj)} fraîcheur)</i> · ${esc(TRACK_LABEL[j.track ?? ""] ?? "")}`,
     `<b>${esc(j.title)}</b>`,
     `🏢 ${esc(j.company)} · 📍 ${esc(j.location)}${mode}`,
-    `💶 ${salaryLabel(j.salary_min_eur, j.salary_max_eur)}  ·  🕐 ${timeAgo(j.posted_at ?? j.first_seen_at)} · ${esc(j.source)}`,
+    `💰 ${salaryLabel(j.salary_min_eur, j.salary_max_eur)}  ·  🕐 ${timeAgo(j.posted_at ?? j.first_seen_at)} · ${esc(j.source)}`,
   ];
   if (d.matchedSkills?.length) lines.push(`✅ ${esc(d.matchedSkills.slice(0, 8).join(", "))}`);
   if (d.penalties?.length) lines.push(`⚠️ ${esc(d.penalties.map((p) => p.label).join(" · "))}`);

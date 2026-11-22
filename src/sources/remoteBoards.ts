@@ -1,5 +1,6 @@
 /**
- * Job boards 100% remote. Conditions d'usage : on cite la source et on renvoie vers leur URL (fait dans le tableau).
+ * Job boards 100% remote (télétravail depuis Dubaï : seules les offres mondiales / Golfe passent le scoring).
+ * Conditions d'usage : on cite la source et on renvoie vers leur URL (fait dans le tableau).
  */
 import { XMLParser } from "fast-xml-parser";
 import type { RawJob, Source } from "../lib/types";
@@ -139,13 +140,7 @@ export const himalayas: Source = {
 };
 
 // ───────────── We Work Remotely (RSS) ─────────────
-const WWR_FEEDS = [
-  "remote-full-stack-programming-jobs",
-  "remote-back-end-programming-jobs",
-  "remote-front-end-programming-jobs",
-  "remote-devops-sysadmin-jobs",
-  "remote-product-jobs",
-];
+const WWR_FEEDS = ["remote-customer-support-jobs", "all-other-remote-jobs"];
 
 interface WwrItem {
   title: string;

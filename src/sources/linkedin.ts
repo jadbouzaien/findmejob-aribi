@@ -20,25 +20,37 @@ interface Query {
 // LinkedIn accepte les opérateurs booléens : moins de requêtes = moins de risque de blocage (429)
 const OR = (...k: string[]) => k.map((x) => (x.includes(" ") ? `"${x}"` : x)).join(" OR ");
 
+const DUBAI = "Dubai, United Arab Emirates";
+const UAE = "United Arab Emirates";
+
+// Requêtes groupées par métier (LinkedIn tronque les requêtes OR trop longues).
+// distance 40 km autour de Dubaï : inclut Sharjah et Ajman.
 const QUERIES: Query[] = [
   {
-    keywords: OR("développeur", "developer", "fullstack", "devops", "chef de projet", "product owner", "intelligence artificielle", "automatisation", "intégration", "no-code"),
-    location: "Marseille, Provence-Alpes-Côte d'Azur, France",
-    distance: 25,
+    keywords: OR("customer service", "customer support", "customer experience", "client relations", "client services", "call center", "contact center"),
+    location: DUBAI,
+    distance: 40,
   },
-  ...["Toulon", "Montpellier"].map((city) => ({
-    keywords: OR("développeur", "fullstack", "devops", "chef de projet", "product owner", "IA"),
-    location: `${city}, France`,
-    wt: "2,3",
-    distance: 15,
-  })),
-  { keywords: OR("fullstack", "node.js", "typescript", "devops", "AI engineer", "IA générative"), location: "France", wt: "2" },
-  { keywords: OR("chef de projet", "product owner", "solutions engineer", "no-code", "automatisation", "déploiement"), location: "France", wt: "2" },
   {
-    keywords: OR("full stack typescript", "AI automation", "forward deployed engineer", "solutions engineer", "AI integration", "devops"),
-    location: "European Union",
-    wt: "2",
+    keywords: OR("receptionist", "front desk", "front office", "administrative assistant", "admin assistant", "office administrator", "office coordinator", "executive assistant", "secretary"),
+    location: DUBAI,
+    distance: 40,
   },
+  {
+    keywords: OR("guest relations", "guest services", "guest service agent", "concierge", "VIP host", "hospitality coordinator", "events coordinator"),
+    location: DUBAI,
+    distance: 40,
+  },
+  {
+    keywords: OR("property consultant", "real estate consultant", "real estate agent", "leasing consultant", "leasing executive", "sales administrator", "conveyancing", "property administrator"),
+    location: DUBAI,
+    distance: 40,
+  },
+  { keywords: OR("sales coordinator", "sales support", "order processing", "document controller", "back office"), location: DUBAI, distance: 40 },
+  // Atouts linguistiques : le français et l'arabe sont recherchés à Dubaï
+  { keywords: OR("French", "francophone"), location: DUBAI, distance: 40 },
+  // Télétravail depuis les Émirats
+  { keywords: OR("customer service", "customer support", "virtual assistant", "administrative assistant", "French"), location: UAE, wt: "2" },
 ];
 
 function searchUrl(q: Query, windowSec: number, start = 0) {
@@ -103,8 +115,7 @@ async function fetchDetail(id: string): Promise<{ description: string | null; cr
   return { description: $desc.text().replace(/[ \t]+/g, " ").trim() || null, criteria };
 }
 
-// "2,3" (remote ou hybride) : les deux te conviennent pour Toulon/Montpellier → on compte "hybride"
-const wtToMode = (wt?: string): WorkMode => (wt === "2" ? "remote" : wt === "2,3" ? "hybrid" : "unknown");
+const wtToMode = (wt?: string): WorkMode => (wt === "2" ? "remote" : wt === "3" ? "hybrid" : "unknown");
 
 let backoffUntil = 0;
 
@@ -112,7 +123,7 @@ let backoffUntil = 0;
 async function liGet(url: string): Promise<string> {
   for (let attempt = 0; ; attempt++) {
     try {
-      return await getText(url, { headers: { Accept: "text/html,application/xhtml+xml" } });
+      return await getText(url, { headers: { Accept: "text/html,application/xhtml+xml", "Accept-Language": "en-US,en;q=0.9" } });
     } catch (e) {
       if (!(e instanceof HttpError && e.status === 429) || attempt >= 3) throw e;
       await jitter(8000 * (attempt + 1), 15000 * (attempt + 1));

@@ -21,8 +21,8 @@ for (const r of rows) {
     salaryText: r.salary_text,
     salaryMin: r.salary_min_eur,
     salaryMax: r.salary_max_eur,
-    salaryCurrency: "EUR",
-    salaryPeriod: "year",
+    salaryCurrency: "AED",
+    salaryPeriod: "month",
     postedAt: r.posted_at,
   };
   const s = scoreJob(raw);

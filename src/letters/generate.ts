@@ -44,7 +44,7 @@ export function cleanTitle(t: string) {
   return t
     .replace(/\((h|f|m|w|d)\s*[/,-]?\s*(h|f|m|w|d)?\s*[/,-]?\s*(h|f|m|w|d)?\)/gi, "")
     .replace(/\b(h\/f|f\/h|m\/f|f\/m|m\/w\/d)\b/gi, "")
-    .replace(/\s[-–|]\s*(cdi|cdd|freelance|remote|hybride?|t[ée]l[ée]travail|paris|marseille|lyon|nantes|toulouse|aix[- ]en[- ]provence|full remote)\b.*$/i, "")
+    .replace(/\s[-–|]\s*(cdi|cdd|freelance|remote|hybride?|t[ée]l[ée]travail|dubai|abu dhabi|sharjah|uae|full remote)\b.*$/i, "")
     .replace(/^(cdi|cdd)\s*[-–:]\s*/i, "")
     .replace(/\s{2,}/g, " ")
     .replace(/[\s\-–|,]+$/, "")
@@ -80,29 +80,40 @@ function pickProofs(text: string, track: TrackId | null) {
     .map((x) => x.p);
 }
 
+const FR_SKILL: Record<string, string> = {
+  "database management": "gestion de bases de données",
+  "calendar management": "gestion d'agendas",
+  "complaint handling": "traitement des réclamations",
+  quotations: "devis",
+  "order processing": "traitement des commandes",
+  "after-sales service": "service après-vente",
+  "lead generation": "prospection",
+  "property viewings": "visites de biens",
+  "document management": "gestion documentaire",
+  confidentiality: "confidentialité",
+  French: "français",
+  Arabic: "arabe",
+};
+
 /** Compétences que le candidat maîtrise ET que l'offre mentionne, dans l'ordre où l'offre les cite */
 function skillsFromOffer(text: string, lang: Lang) {
   return MY_SKILLS.map(([re, label]) => ({ label, idx: text.search(re) }))
     .filter((x) => x.idx >= 0)
     .sort((a, b) => a.idx - b.idx)
     .slice(0, 5)
-    .map((x) => (lang === "en" ? x.label.replace("agents IA", "AI agents").replace("facturation électronique", "e-invoicing") : x.label));
+    .map((x) => (lang === "fr" ? (FR_SKILL[x.label] ?? x.label) : x.label));
 }
 
 function locationSentence(job: LetterJob, lang: Lang) {
   const c = city(job.location);
   if (job.work_mode === "remote")
     return lang === "fr"
-      ? "Je travaille en remote depuis plusieurs années, chez Beev comme en freelance : je suis à l'aise avec une organisation asynchrone et une communication écrite claire."
-      : "I have worked remotely for several years, at Beev as well as in freelance: I am comfortable with asynchronous collaboration and clear written communication.";
-  if (job.zone === "near")
+      ? "Je vis à Dubaï et peux travailler à distance sur les horaires de la région Golfe comme sur ceux de l'Europe."
+      : "Based in Dubai, I can work remotely across both Gulf and European business hours.";
+  if (job.zone === "home" || job.zone === "near" || job.zone === "country")
     return lang === "fr"
-      ? `Basé à Marseille, le format hybride à ${c} me convient parfaitement.`
-      : `Based in Marseille, a hybrid setup in ${c} suits me perfectly.`;
-  if (job.zone === "home")
-    return lang === "fr"
-      ? `Basé à Marseille, je suis disponible rapidement pour rejoindre vos équipes${c && !/marseille/i.test(c) ? ` à ${c}` : ""}.`
-      : `Based in Marseille, I can join your team${c && !/marseille/i.test(c) ? ` in ${c}` : ""} quickly.`;
+      ? `Je vis à Dubaï et suis disponible rapidement${c && !/dubai|duba[iï]/i.test(c) ? ` pour un poste à ${c}` : ""}.`
+      : `I live in Dubai and can start quickly${c && !/dubai/i.test(c) ? ` in ${c}` : ""}.`;
   return lang === "fr" ? "Je suis disponible rapidement." : "I am available to start quickly.";
 }
 
@@ -113,7 +124,7 @@ export function buildLetter(job: LetterJob) {
   const track = (job.track as TrackId | null) ?? null;
   const text = `${job.title}\n${job.description ?? ""}`;
 
-  const hook = HOOKS[track ?? "fullstack"][lang];
+  const hook = HOOKS[track ?? "customer_service"][lang];
   const proofs = pickProofs(text, track).map((p) => p[lang]);
   const skills = skillsFromOffer(text, lang);
 
@@ -123,18 +134,18 @@ export function buildLetter(job: LetterJob) {
     if (proofs.length) paragraphs.push(`Quelques réalisations en lien direct avec le poste :`);
     if (skills.length)
       paragraphs.push(
-        `Votre annonce mentionne des technologies et pratiques que je maîtrise : ${joinList(skills, lang)}. Je serais ravi de mettre cette expérience au service ${de(company)}, avec la même exigence de qualité et le même souci des besoins métier.`,
+        `Votre annonce mentionne des compétences que j'utilise au quotidien : ${joinList(skills, lang)}. J'aurais à cœur de mettre cette expérience au service ${de(company)}, avec le même sens du service et la même rigueur.`,
       );
-    else paragraphs.push(`Je serais ravi de mettre cette expérience au service ${de(company)}, avec la même exigence de qualité et le même souci des besoins métier.`);
-    paragraphs.push(`${locationSentence(job, lang)} Je serais heureux d'échanger avec vous pour vous présenter plus en détail mon parcours et ce que je peux apporter à votre équipe.`);
+    else paragraphs.push(`J'aurais à cœur de mettre cette expérience au service ${de(company)}, avec le même sens du service et la même rigueur.`);
+    paragraphs.push(`${locationSentence(job, lang)} J'aurais plaisir à échanger avec vous pour vous présenter mon parcours et ce que je peux apporter à votre équipe.`);
   } else {
     paragraphs.push(`Your ${title} opening at ${company} caught my attention. ${hook}`);
     if (proofs.length) paragraphs.push(`A few achievements directly related to the role:`);
     if (skills.length)
       paragraphs.push(
-        `Your job description mentions technologies and practices I have hands-on experience with: ${joinList(skills, lang)}. I would be glad to bring this experience to ${company}, with the same focus on quality and on what users actually need.`,
+        `Your job description mentions skills I use every day: ${joinList(skills, lang)}. I would be glad to bring this experience to ${company}, with the same service mindset and attention to detail.`,
       );
-    else paragraphs.push(`I would be glad to bring this experience to ${company}, with the same focus on quality and on what users actually need.`);
+    else paragraphs.push(`I would be glad to bring this experience to ${company}, with the same service mindset and attention to detail.`);
     paragraphs.push(`${locationSentence(job, lang)} I would welcome the opportunity to discuss my background and how I can contribute to your team.`);
   }
 
@@ -171,7 +182,7 @@ function letterHtml(job: LetterJob) {
   </div>
   <div class="meta">
     <div class="to"><b>${esc(l.company)}</b>${job.location ? `<br>${esc(job.location)}` : ""}</div>
-    <div class="date">${fr ? `Marseille, le ${date}` : date}</div>
+    <div class="date">${fr ? `Dubaï, le ${date}` : `Dubai, ${date}`}</div>
   </div>
   <div class="obj">${fr ? "Objet : candidature au poste de" : "Re: application for the"} ${esc(l.title)}${fr ? "" : " position"}</div>
   <p>${fr ? "Madame, Monsieur," : "Dear Hiring Team,"}</p>

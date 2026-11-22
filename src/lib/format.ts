@@ -12,9 +12,10 @@ export function timeAgo(d: Date | string | null | undefined): string {
 
 export function salaryLabel(min: number | null, max: number | null): string {
   if (!min && !max) return "—";
-  const k = (n: number) => `${Math.round(n / 1000)}k€`;
-  if (min && max && min !== max) return `${k(min)}–${k(max)}`;
-  return k((max ?? min)!);
+  // Salaire mensuel en AED
+  const k = (n: number) => (n >= 10_000 ? `${Math.round(n / 1000)}k` : `${(n / 1000).toFixed(1).replace(/\.0$/, "")}k`);
+  if (min && max && min !== max) return `AED ${k(min)}–${k(max)}/mois`;
+  return `AED ${k((max ?? min)!)}/mois`;
 }
 
 export const MODE_LABEL: Record<string, string> = {
@@ -35,10 +36,9 @@ export const STATUS_LABEL: Record<string, string> = {
 };
 
 export const TRACK_LABEL: Record<string, string> = {
-  fullstack: "Dev Fullstack JS",
-  ai_integration: "Intégration IA",
-  devops: "DevOps / Cloud",
-  deployment: "Déploiement SaaS",
-  project_product: "Chef de projet / PO",
-  nocode_ops: "Ops / No-code",
+  customer_service: "Customer Service",
+  admin_reception: "Accueil / Admin",
+  guest_relations: "Guest Relations",
+  real_estate: "Immobilier",
+  sales_coordination: "Coordination commerciale",
 };

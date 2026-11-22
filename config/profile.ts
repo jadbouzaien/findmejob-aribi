@@ -1,368 +1,368 @@
 import "../src/lib/env"; // charge .env avant de lire SALARY_*
 /**
- * TON PROFIL DE RECHERCHE — c'est ici que tu règles tout le scoring.
+ * PROFIL DE RECHERCHE — Mahdi Aribi, basé à Dubaï.
+ * Relation client, accueil / assistanat administratif, guest relations, immobilier, coordination commerciale.
+ * Trilingue arabe (natif) / anglais / français : le français et l'arabe sont des atouts recherchés à Dubaï.
+ *
  * Après modification : `npm run rescore` recalcule les scores des offres déjà en base.
  */
 
-export type TrackId =
-  | "fullstack"
-  | "ai_integration"
-  | "devops"
-  | "deployment"
-  | "project_product"
-  | "nocode_ops";
+export type TrackId = "customer_service" | "admin_reception" | "guest_relations" | "real_estate" | "sales_coordination";
 
 export interface Track {
   id: TrackId;
   label: string;
-  /** Fichier dans /cvs à envoyer pour ce type de poste (offre en français) */
+  /** Fichier dans /cvs à envoyer pour une offre rédigée en français */
   cv: string;
-  /** CV pour une offre rédigée en anglais */
+  /** CV pour une offre rédigée en anglais (le cas général à Dubaï) */
   cvEn: string;
   /** CV spécifiques selon le titre : [regex titre, cv FR, cv EN] (prioritaire) */
   cvByTitle?: Array<[RegExp, string, string]>;
   /**
-   * Ton expérience réelle DANS CE MÉTIER : au-delà, les années demandées par l'offre sont pénalisées.
-   * seniorTitle = pénalité si le titre dit "Senior / Confirmé / Expérimenté".
+   * Expérience réelle DANS CE MÉTIER : au-delà, les années demandées par l'offre sont pénalisées.
+   * seniorTitle = pénalité si le titre dit "Senior / Sr".
    */
   seniority: { years: number; seniorTitle: number; excludeSeniorIf?: RegExp };
   /** Titre très aligné → 45 pts */
   strongTitle: RegExp[];
   /** Titre compatible mais générique → 25 pts */
   weakTitle: RegExp[];
-  /** Compétences recherchées dans titre + description (poids = points) */
+  /** Compétences / atouts recherchés dans titre + description (poids = points, plafonné à 25) */
   skills: Array<[RegExp, number]>;
-  /** Pénalités spécifiques à la catégorie (ex: stack non maîtrisée) */
+  /** Pénalités spécifiques à la catégorie */
   penalties?: Array<[RegExp, number, string]>;
 }
 
 const w = (s: string) => new RegExp(`(^|[^a-z0-9])(${s})([^a-z0-9]|$)`, "i");
 
+const CV = (variant: string, lang: "EN" | "FR") => `CV_Mahdi_Aribi_${variant}_${lang}.pdf`;
+
+/** Atouts communs : langues et outils (présents dans toutes les catégories) */
+const LANG_SKILLS: Array<[RegExp, number]> = [
+  [w("french|francophone|fran[çc]ais"), 6],
+  [w("arabic|arabe"), 4],
+  [w("multilingual|bilingual|trilingual|multilingue|bilingue"), 3],
+];
+const OFFICE_SKILLS: Array<[RegExp, number]> = [
+  [w("ms office|microsoft office|office 365|outlook|excel|word"), 2],
+  [w("google workspace|g ?suite|google sheets"), 1],
+  [w("crm|database|salesforce|hubspot|zoho"), 2],
+];
+
 export const TRACKS: Track[] = [
   {
-    id: "fullstack",
+    id: "customer_service",
+    // Kalstein (3 ans service client) + 5 ans de relation clients chez le notaire + immobilier
     seniority: { years: 7, seniorTitle: 0 },
-    label: "Dev Fullstack JS",
-    cv: "CV_Jad_Bouzaien_FR.pdf",
-    cvEn: "CV_Jad_Bouzaien_EN.pdf",
+    label: "Customer Service / Relation client",
+    cv: CV("Customer_Service", "FR"),
+    cvEn: CV("Customer_Service", "EN"),
     strongTitle: [
-      w("full[- ]?stack"),
-      w("fullstack"),
-      w("node(\\.?js)?|nest(\\.?js)?|typescript|react|next\\.?js|javascript"),
-      w("d[ée]veloppeur(se)? web|web developer|software engineer.*(node|typescript|react)"),
+      w("customer (service|support|care|experience|relations?|success|happiness)( \\w+)?"),
+      w("client (services?|relations?|relationship|support|care|experience)( \\w+)?"),
+      w("(french|arabic|bilingual|multilingual)[- ]speaking (customer|client|support|agent|advisor|representative)"),
+      w("contact cent(er|re) (agent|executive|representative|advisor)|call cent(er|re) (agent|executive|representative)"),
+      w("service client|relation client|conseiller(e)? client(e|èle)?|charg[ée]e? de client[èe]le"),
+      w("customer service (representative|executive|officer|agent|advisor|associate|coordinator|specialist)"),
     ],
-    weakTitle: [
-      w("d[ée]veloppeu(r|se)|developer|software engineer|ing[ée]nieur (logiciel|d[ée]veloppement|d[ée]v)|product engineer"),
-      w("back[- ]?end|front[- ]?end"),
-    ],
+    weakTitle: [w("customer|client|support (agent|specialist|associate|executive|advisor)|helpdesk|help desk|contact cent(er|re)|call cent(er|re)")],
     skills: [
-      [w("typescript|ts"), 5],
-      [w("node(\\.?js)?"), 5],
-      [w("nest\\.?js|nestjs"), 5],
-      [w("react(\\.?js)?"), 4],
-      [w("next\\.?js"), 4],
-      [w("javascript|js"), 2],
-      [w("postgres(ql)?|postgre"), 4],
-      [w("sql|mysql"), 2],
-      [w("docker"), 2],
-      [w("aws|gcp|google cloud"), 2],
-      [w("ci/cd|github actions"), 2],
-      [w("api rest|rest api|restful|graphql"), 2],
-      [w("figma"), 1],
-      [w("saas"), 2],
-      [w("llm|openai|claude|anthropic|ia g[ée]n[ée]rative|genai|ai agents?|agents? ia"), 3],
-      [w("php|symfony|laravel"), 1],
+      ...LANG_SKILLS,
+      ...OFFICE_SKILLS,
+      [w("complaints?|r[ée]clamations?|escalations?"), 4],
+      [w("enquir(y|ies)|inquir(y|ies)|requests?"), 2],
+      [w("orders?|order processing|shipments?|tracking|deliver(y|ies)"), 3],
+      [w("after[- ]sales|warranty|returns?"), 3],
+      [w("quotations?|quotes?|devis"), 3],
+      [w("phone|calls?|e-?mails?|live chat|chat"), 2],
+      [w("customer satisfaction|csat|nps|service quality"), 2],
+      [w("follow[- ]up|follow up"), 2],
+    ],
+  },
+  {
+    id: "admin_reception",
+    // Assistant administratif chez un notaire parisien (2021-2026) + accueil événementiel
+    seniority: { years: 5, seniorTitle: 5, excludeSeniorIf: w("executive assistant|personal assistant|office manager") },
+    label: "Accueil / Assistanat administratif",
+    cv: CV("Admin", "FR"),
+    cvEn: CV("Admin", "EN"),
+    cvByTitle: [[w("receptionist|front desk|front office|reception"), CV("Admin", "FR"), CV("Admin", "EN")]],
+    strongTitle: [
+      w("receptionist|reception (executive|officer|supervisor)|front desk( \\w+)?|front office (executive|officer|coordinator|administrator|assistant)"),
+      w("(administrative|admin|office|personal|executive|legal|team|sales|hr|project|virtual) assistant"),
+      w("office (administrator|coordinator|admin|executive|secretary)|administration (officer|executive|coordinator)"),
+      w("admin(istrative)? (officer|executive|coordinator|specialist|clerk)"),
+      w("secretary|secr[ée]taire|assistante? (administrati(f|ve)|de direction|juridique|notari(al|ale))|h[ôo]te(sse)? d'accueil|charg[ée]e? d'accueil"),
+      w("document controller|back office (executive|officer|coordinator|assistant)|data entry (clerk|operator|executive)"),
+    ],
+    weakTitle: [w("admin|administrative|administrator|reception|office (assistant|coordinator|executive)|assistant|clerk|documentation|records")],
+    skills: [
+      ...LANG_SKILLS,
+      ...OFFICE_SKILLS,
+      [w("calendars?|agenda|scheduling|appointments?|meetings?"), 4],
+      [w("phone|calls?|switchboard|visitors?|guests?|front desk"), 3],
+      [w("filing|documents?|documentation|records|archiv(e|ing)|correspondence"), 4],
+      [w("data entry|databases?|registers?"), 3],
+      [w("confidential(ity)?|discretion|sensitive"), 3],
+      [w("legal|law firm|notar(y|ial)|contracts?|conveyancing"), 3],
+      [w("travel arrangements?|logistics|courier|mail"), 2],
+      [w("invoices?|invoicing|petty cash|purchase orders?"), 2],
     ],
     penalties: [
-      [w("java(?!script)|spring|j2ee|jee"), 30, "Stack Java"],
-      [w("\\.net|c#|dotnet|asp\\.net"), 30, "Stack .NET"],
-      [w("ruby|rails|scala|elixir|kotlin|swift|ios|android|flutter|golang|rust|c\\+\\+|embedded|embarqu[ée]"), 25, "Stack non maîtrisée"],
-      [w("angular|vue\\.?js|vuejs|nuxt"), 6, "Front Angular/Vue (pas React)"],
-      [w("salesforce|sap|abap|wordpress only|magento|shopify"), 15, "Écosystème éditeur"],
+      [w("medical (secretary|assistant|coding)|dha licen[cs]e|nursing"), 15, "Profil médical"],
+      [w("payroll|accounts? (payable|receivable)|bookkeep(ing|er)|accountant|tally|quickbooks"), 12, "Comptabilité"],
     ],
   },
   {
-    id: "ai_integration",
-    seniority: { years: 4, seniorTitle: 5 },
-    label: "Intégration IA / Automatisation",
-    cv: "CV_Jad_Bouzaien_IA_FR.pdf",
-    cvEn: "CV_Jad_Bouzaien_AI_EN.pdf",
+    id: "guest_relations",
+    // VIP Host Team Leader (Dubaï 2026) + Event Receptionist VivaTech (2023-2025)
+    seniority: { years: 2, seniorTitle: 8, excludeSeniorIf: w("manager|director|head") },
+    label: "Guest Relations / Hospitalité / Événementiel",
+    cv: CV("Guest_Relations", "FR"),
+    cvEn: CV("Guest_Relations", "EN"),
     strongTitle: [
-      w("ai (automation|integration|solutions?|application|product|implementation|workflow|agents?) (engineer|developer|specialist|consultant)"),
-      w("(applied|genai|gen ai|llm|generative ai) engineer"),
-      w("ai engineer|ai developer|agentic|ai agents?"),
-      w("forward[- ]deployed (engineer|software engineer|deployment)"),
-      w("automation engineer|workflow automation"),
-      w("(d[ée]veloppeur|ing[ée]nieur|int[ée]grateur|consultant)( \\w+)? (ia|intelligence artificielle|ia g[ée]n[ée]rative)"),
-      w("prompt engineer"),
+      w("guest (relations?|services?|experience)( \\w+)?|guest service agent"),
+      w("concierge|vip (host|hostess|services?|relations?)|host(ess)?|hospitality (coordinator|executive|host|officer)"),
+      w("front office (agent|associate)|front desk (agent|associate)|reception(ist)? (agent|associate)"),
+      w("event(s)? (coordinator|executive|assistant|host|receptionist|staff)|events? and hospitality"),
+      w("customer experience (host|ambassador|associate)|client (experience|services?) (host|ambassador)|brand ambassador|lounge (host|agent)"),
     ],
-    weakTitle: [w("ai|ia|llm|genai|automation|automatisation")],
+    weakTitle: [w("guest|hospitality|events?|concierge|ambassador|lounge")],
     skills: [
-      [w("llms?|large language models?"), 5],
-      [w("openai|gpt-?\\d?|chatgpt"), 4],
-      [w("claude|anthropic"), 5],
-      [w("agents?|agentic|multi-agents?|agentique"), 4],
-      [w("rag|retrieval|vector (db|database)|embeddings?|pgvector"), 3],
-      [w("langchain|langgraph|llamaindex|mcp|model context protocol"), 3],
-      [w("n8n|make\\.com|zapier"), 4],
-      [w("prompt(ing| engineering)?"), 2],
-      [w("api integrations?|int[ée]grations? api|webhooks?"), 3],
-      [w("typescript|node(\\.?js)?|python"), 3],
-      [w("workflows?|orchestration"), 3],
-      [w("saas|b2b"), 2],
+      ...LANG_SKILLS,
+      [w("vip|luxury|5[- ]star|five[- ]star|premium|high[- ]end"), 5],
+      [w("hotel|hospitality|resort|lounge|events?|exhibitions?"), 4],
+      [w("guests?|visitors?|welcom(e|ing)|greet(ing)?"), 4],
+      [w("reservations?|bookings?|check[- ]in|check[- ]out"), 3],
+      [w("opera|micros|fidelio"), 2],
+      [w("complaints?|requests?"), 2],
+      [w("team (leader|coordination)|coordinate"), 2],
     ],
     penalties: [
-      [w("phd|doctorat|research scientist|ml researcher"), 25, "Profil recherche / PhD"],
-      [w("pytorch|tensorflow|jax|cuda|model training|fine-?tuning|pre-?training|computer vision|mlops"), 12, "ML pur (entraînement de modèles)"],
+      [w("food (and|&) beverage|f&b|banquet|bartend(er|ing)|sommelier|culinary|kitchen"), 20, "Restauration (F&B)"],
+      [w("housekeeping|laundry|room attendant|spa therapist"), 25, "Housekeeping / spa"],
     ],
   },
   {
-    id: "devops",
-    // DevOps : CI/CD et déploiements en tant que dev (~3 ans), jamais le titre DevOps à temps plein.
-    // Un poste DevOps / SRE / Platform SENIOR n'est pas ton profil → offre masquée.
-    seniority: {
-      years: 3,
-      seniorTitle: 20,
-      excludeSeniorIf: w("devops|dev ops|devsecops|sre|site reliability|platform|cloud|infrastructure|infra|syst[eè]mes?|production|release|build"),
-    },
-    label: "DevOps / Cloud / Production",
-    cv: "CV_Jad_Bouzaien_DevOps.pdf",
-    cvEn: "CV_Jad_Bouzaien_DevOps_EN.pdf",
+    id: "real_estate",
+    // Property Consultant chez Al Firouz (depuis août 2026) + 5 ans chez un notaire (dossiers immobiliers)
+    seniority: { years: 1, seniorTitle: 10, excludeSeniorIf: w("manager|director|head") },
+    label: "Immobilier (Property Consultant / Leasing / Admin)",
+    cv: CV("Real_Estate", "FR"),
+    cvEn: CV("Real_Estate", "EN"),
     strongTitle: [
-      w("devops|dev ops|devsecops"),
-      w("sre|site reliability"),
-      w("platform engineer|cloud engineer|infrastructure engineer|ing[ée]nieur (cloud|infrastructure|production|d'exploitation|exploitation)"),
-      w("build (and|&) release|release engineer|ci/cd engineer"),
+      w("property (consultant|advisor|adviser|specialist|executive|coordinator|administrator|officer)"),
+      w("real estate (consultant|agent|advisor|adviser|broker|specialist|executive|coordinator|administrator|admin|assistant|sales)"),
+      w("leasing (consultant|executive|agent|officer|coordinator|administrator|assistant|specialist)"),
+      w("(conveyancing|mortgage|transaction|handover|registration) (administrator|admin|coordinator|executive|officer|assistant)"),
+      w("(real estate|property|properties) (sales )?(administrator|admin|coordinator)|(sales|crm) (administrator|admin|coordinator) (- )?(real estate|property)"),
+      w("(off[- ]plan|secondary market|luxury) (property|real estate|sales) (consultant|advisor|specialist)"),
+      w("conveyancer|conseiller(e)? immobilier|n[ée]gociat(eur|rice) immobilier|agent immobilier"),
     ],
-    weakTitle: [w("cloud|infrastructure|syst[eè]mes?|sysadmin|administrateur|exploitation|production")],
+    weakTitle: [w("property|properties|real estate|realty|leasing|letting|conveyancing|brokerage|immobilier")],
     skills: [
-      [w("docker|containers?|conteneurs?"), 5],
-      [w("kubernetes|k8s|helm"), 4],
-      [w("ci/cd|ci-cd|github actions|gitlab[- ]ci|jenkins"), 5],
-      [w("aws"), 4],
-      [w("gcp|google cloud"), 3],
-      [w("linux|bash|shell"), 3],
-      [w("python"), 2],
-      [w("postgres(ql)?|mysql|sql"), 2],
-      [w("terraform|ansible|iac|infrastructure as code"), 2],
-      [w("prometheus|grafana|datadog|monitoring|observability"), 2],
-      [w("node(\\.?js)?|typescript"), 2],
-    ],
-    penalties: [
-      [w("azure"), 6, "Azure (non maîtrisé)"],
-      [w("windows server|active directory|vmware|citrix|r[ée]seau|cisco|t[ée]l[ée]com"), 12, "Infra système/réseau classique"],
-      [w("habilitation|secret d[ée]fense|clearance|security clearance"), 30, "Habilitation requise"],
+      ...LANG_SKILLS,
+      ...OFFICE_SKILLS,
+      [w("off[- ]plan|secondary|leasing|rental|tenancy|ejari"), 3],
+      [w("rera|dld|dubai land department|brn|trakheesi|oqood"), 3],
+      [w("leads?|lead generation|prospect(ing|ion)|cold calling"), 3],
+      [w("viewings?|site visits?|property tours?"), 3],
+      [w("client relationship|client relations|clients?|investors?|buyers?|tenants?|landlords?"), 3],
+      [w("contracts?|documentation|spa|mou|title deeds?|kyc|aml"), 4],
+      [w("property finder|bayut|dubizzle"), 2],
     ],
   },
   {
-    id: "deployment",
-    seniority: { years: 5, seniorTitle: 5 },
-    label: "Déploiement SaaS / Solutions / Intégration",
-    cv: "CV_Jad_Bouzaien_Chef_de_projet_deploiement.pdf",
-    cvEn: "CV_Jad_Bouzaien_AI_EN.pdf", // solutions / FDE en anglais : profil technique IA
+    id: "sales_coordination",
+    // Kalstein : devis, commandes, suivi DHL, SAV en lien avec l'ADV
+    seniority: { years: 3, seniorTitle: 8, excludeSeniorIf: w("manager|director|head") },
+    label: "Coordination commerciale / ADV / Sales support",
+    cv: CV("Customer_Service", "FR"),
+    cvEn: CV("Customer_Service", "EN"),
     strongTitle: [
-      w("chef(fe)? de projet (d[ée]ploiement|int[ée]gration|implementation|impl[ée]mentation|onboarding)"),
-      w("(implementation|integration|onboarding|deployment) (manager|consultant|engineer|specialist|lead)"),
-      w("solutions? (engineer|architect|consultant)|sales engineer|presales|avant[- ]vente"),
-      w("customer (success )?engineer|technical account manager|technical customer success"),
-      w("consultant(e)? (fonctionnel|technique|technico[- ]fonctionnel|saas|int[ée]gration)"),
-      w("int[ée]grateur|integrator"),
+      w("sales (coordinator|administrator|admin|support|assistant|operations (coordinator|executive|assistant))"),
+      w("order (processing|management|entry|fulfil?ment) (executive|coordinator|specialist|officer|associate)"),
+      w("(customer service|cs) (and|&) (sales|logistics) (coordinator|executive|admin)"),
+      w("(logistics|shipping|procurement|purchasing|operations) (coordinator|assistant|administrator)"),
+      w("assistante? (commercial(e)?|adv)|administration des ventes|gestionnaire adv|charg[ée]e? adv"),
     ],
-    weakTitle: [w("d[ée]ploiement|deployment|onboarding|implementation|impl[ée]mentation|customer success|support (engineer|technique)")],
+    weakTitle: [w("sales support|sales admin|customer (service )?coordinator|order|operations (executive|associate|assistant)")],
     skills: [
-      [w("saas"), 5],
-      [w("b2b"), 3],
-      [w("api|apis|rest api|restful"), 4],
-      [w("sql|postgres(ql)?"), 4],
-      [w("int[ée]grations?|integrations?"), 3],
-      [w("recette|uat|tests? fonctionnels?"), 3],
-      [w("onboarding|d[ée]ploiement|deployment|implementation|go[- ]live|mise en production"), 3],
-      [w("crm|hubspot|zoho"), 3],
-      [w("facturation|e-?invoicing|factur-x|comptabilit[ée]|accounting|erp"), 4],
-      [w("flottes?|fleet|mobilit[ée]|ev|v[ée]hicules? [ée]lectriques?|bornes?"), 4],
-      [w("json|csv|webhooks?|etl"), 2],
-      [w("client|customers?"), 1],
+      ...LANG_SKILLS,
+      ...OFFICE_SKILLS,
+      [w("quotations?|quotes?|proformas?|price lists?"), 4],
+      [w("orders?|purchase orders?|order processing"), 4],
+      [w("shipments?|shipping|dhl|aramex|fedex|logistics|deliver(y|ies)"), 3],
+      [w("after[- ]sales|warranty|spare parts"), 3],
+      [w("erp|sap"), 1],
+      [w("medical|laboratory|equipment|industrial"), 2],
     ],
-  },
-  {
-    id: "project_product",
-    // PO/PM : ~1 an (freelance 2025-2026), jamais en poste à temps plein.
-    // Un poste Product Manager / Owner SENIOR n'est pas ton profil → offre masquée (pas juste pénalisée).
-    seniority: { years: 1, seniorTitle: 20, excludeSeniorIf: w("product (manager|owner|lead)|pm|po|proxy po") },
-    label: "Chef de projet / PO / PM technique",
-    cv: "CV_Jad_Bouzaien_Chef_de_projet.pdf",
-    cvEn: "CV_Jad_Bouzaien_PO_PM_EN.pdf",
-    cvByTitle: [[w("product|produit|po|owner|pm"), "CV_Jad_Bouzaien_PO_PM_FR.pdf", "CV_Jad_Bouzaien_PO_PM_EN.pdf"]],
-    strongTitle: [
-      w("chef(fe)? de projet( (informatique|technique|digital|num[ée]rique|web|si|it|moa|amoa|moe))?"),
-      w("(technical |it |digital )?project manager"),
-      w("product owner|po technique|proxy po"),
-      w("(technical )?product manager"),
-      w("delivery manager|program manager|scrum master"),
-    ],
-    weakTitle: [w("projet|project|product|produit|amoa|moa|coordinat(eur|rice|or)")],
-    skills: [
-      [w("agile|scrum|kanban"), 3],
-      [w("jira|confluence|notion|linear|figma"), 2],
-      [w("sp[ée]cifications?|cahier des charges|user stories|backlog"), 4],
-      [w("recette|uat|qa"), 3],
-      [w("saas|b2b"), 3],
-      [w("api|int[ée]grations?|integrations?"), 3],
-      [w("roadmap|discovery|priorisation|prioritization"), 3],
-      [w("technique|technical|d[ée]veloppeurs?|developers?"), 2],
-      [w("refonte|syst[eè]mes? d'information|migration"), 3],
-      [w("ia|ai|llm"), 2],
-    ],
-    penalties: [
-      [w("pmp|prince2"), 5, "Certification PM demandée"],
-      [w("btp|construction|g[ée]nie civil|industriel|usine|pharma|clinique|marketing digital|[ée]v[ée]nementiel"), 20, "Projet hors IT"],
-    ],
-  },
-  {
-    id: "nocode_ops",
-    seniority: { years: 5, seniorTitle: 5 },
-    label: "Ops / No-code / RevOps",
-    cv: "CV_Jad_Bouzaien_IA_FR.pdf", // n8n, Make, Zapier, HubSpot, Airtable y figurent
-    cvEn: "CV_Jad_Bouzaien_AI_EN.pdf",
-    strongTitle: [
-      w("no[- ]?code|low[- ]?code"),
-      w("rev ?ops|revenue operations|biz ?ops|business operations|sales ops|marketing ops|growth ops|gtm (ops|engineer)|gtm engineer"),
-      w("automation (specialist|manager|lead|consultant)|ops automation"),
-      w("(operations|ops) (engineer|manager|lead).*(automation|tools|systems)"),
-      w("(make|zapier|n8n|airtable|bubble|hubspot|zoho) (developer|expert|specialist|consultant|admin)"),
-      w("business systems|internal tools"),
-    ],
-    weakTitle: [w("ops|operations|op[ée]rations|outils internes")],
-    skills: [
-      [w("zapier"), 4],
-      [w("make\\.com|integromat"), 3],
-      [w("n8n"), 5],
-      [w("airtable|notion"), 3],
-      [w("bubble|softr|glide|retool|webflow"), 3],
-      [w("hubspot|zoho|salesforce|pipedrive|crm"), 4],
-      [w("api|webhooks?"), 4],
-      [w("sql"), 3],
-      [w("ia|ai|llm|gpt|claude"), 3],
-      [w("automati(on|sation)s?|workflows?"), 4],
-      [w("javascript|python|scripts?"), 2],
-    ],
+    penalties: [[w("customs clearance|freight forwarding|supply chain planner|demand planning"), 10, "Logistique spécialisée"]],
   },
 ];
 
-/** Zones géographiques */
+/**
+ * Zones géographiques.
+ * home : Dubaï (+ quartiers)  ·  near : Sharjah / Ajman (trajet quotidien possible)
+ * country : Émirats sans ville précise  ·  far : autres émirats (trajet long)
+ */
 export const LOCATIONS = {
-  // Sur site OK
   home: [
-    "marseille", "bouches[- ]du[- ]rh[oô]ne", "aix[- ]en[- ]provence", "aubagne", "la ciotat", "vitrolles",
-    "marignane", "martigues", "istres", "salon[- ]de[- ]provence", "g[ée]menos", "rousset", "meyreuil",
-    "gardanne", "les milles", "cassis", "allauch", "plan[- ]de[- ]cuques", "(^|\\D)13\\d{3}(\\D|$)", "^13 ?-",
+    "dubai", "dubaï", "doubaï", "dxb", "jebel ali", "business bay", "jlt", "jumeirah", "difc", "deira", "bur dubai", "al quoz",
+    "al barsha", "downtown", "silicon oasis", "dubai south", "jvc", "motor city", "media city", "internet city",
+    "al qusais", "mirdif", "karama", "dubai marina", "palm jumeirah", "dubai hills", "al nahda", "festival city",
   ],
-  // Hybride OK, sur site 100% = moins bien
-  near: [
-    "toulon", "la seyne", "hy[eè]res", "la garde", "six[- ]fours", "var", "(^|\\D)83\\d{3}(\\D|$)", "^83 ?-",
-    "montpellier", "h[ée]rault", "(^|\\D)34\\d{3}(\\D|$)", "^34 ?-",
-    "avignon", "(^|\\D)84\\d{3}(\\D|$)", "^84 ?-", "n[iî]mes", "arles",
-  ],
+  near: ["sharjah", "charjah", "ajman"],
+  far: ["abu dhabi", "al ain", "ras al[- ]khaimah", "rak", "fujairah", "umm al[- ]quwain", "uaq", "ruwais", "khalifa city", "musaffah"],
+  country: ["united arab emirates", "uae", "u\\.a\\.e\\.?", "emirates", "[ée]mirats arabes unis"],
 } as const;
 
-/** Remote accepté */
+/** Autres pays du Golfe / Moyen-Orient : sur site = exclu (il cherche à Dubaï) */
+export const GULF_OTHER =
+  /(saudi|ksa|riyadh|jeddah|dammam|khobar|qatar|doha|kuwait|bahrain|manama|oman|muscat|egypt|cairo|jordan|amman|lebanon|beirut)/i;
+
+/** Remote compatible avec une résidence à Dubaï */
 export const REMOTE_OK_REGIONS =
-  /(worldwide|anywhere|global|world|europe|european|emea|eu\b|france|cet|cest|gmt\+[0-2]|utc[+ ]?[0-2]|remote$|^remote\b|international|europa)/i;
+  /(worldwide|anywhere|global|world|international|mena|middle east|gcc|gulf|uae|united arab emirates|dubai|emea|gmt\+[2-5]|utc ?\+ ?[2-5]|gst|remote$|^remote\b)/i;
 
-/** Remote mais réservé à un autre pays → exclu */
+/** Remote mais réservé à un autre pays / autorisation de travail étrangère → exclu */
 export const REMOTE_RESTRICTED =
-  /(us[- ]only|usa only|u\.s\. only|united states only|must (be|reside|live)[^.]{0,40}(united states|u\.s\.|usa|us\b|canada|uk)|authorized to work in the (united states|us|u\.s\.)|work authorization in the (us|united states)|us citizens?|green card|latam only|apac only|canada only|uk only|india only|philippines|pakistan|brazil only|north america only|americas only|us time ?zones? (only|required)|(pst|est|cst|pt|et) (hours|time ?zone) required)/i;
+  /(us[- ]only|usa only|u\.s\. only|united states only|must (be|reside|live)[^.]{0,40}(united states|u\.s\.|usa|us\b|canada|uk|united kingdom|eu\b|europe|european union)|authorized to work in the (united states|us|u\.s\.|uk|eu)|right to work in the (uk|eu)|work authorization in the (us|united states)|us citizens?|green card|eu (citizens?|residents?) only|latam only|apac only|canada only|uk only|india only|philippines|pakistan only|brazil only|north america only|americas only|us time ?zones? (only|required)|(pst|est|cst|pt|et) (hours|time ?zone) required)/i;
 
-/** Les montants restent dans .env (SALARY_MIN_EUR / SALARY_GOOD_EUR) pour ne pas être publiés */
+/**
+ * Salaire : les montants sont convertis en AED par MOIS (norme aux Émirats, non imposé).
+ * Plancher et "bon salaire" dans .env (SALARY_MIN_AED / SALARY_GOOD_AED) pour ne pas être publiés.
+ */
 export const SALARY = {
-  /** Plancher annuel brut en € */
-  minEur: Number(process.env.SALARY_MIN_EUR ?? 0),
-  /** Bonus si au-dessus */
-  goodEur: Number(process.env.SALARY_GOOD_EUR ?? Infinity),
-  usdToEur: 0.92,
-  gbpToEur: 1.17,
-  chfToEur: 1.05,
+  currency: "AED",
+  minAed: Number(process.env.SALARY_MIN_AED) || 0,
+  goodAed: Number(process.env.SALARY_GOOD_AED) || Infinity,
+  /** Taux vers l'AED */
+  rates: { AED: 1, USD: 3.6725, EUR: 4.25, GBP: 4.9, CHF: 4.5, SAR: 0.98, QAR: 1.01, CAD: 2.65 } as Record<string, number>,
+  /** Bornes plausibles d'un salaire mensuel en AED (au-delà : faux positif) */
+  plausible: { min: 1500, max: 80_000 },
 };
 
 /**
  * Pénalités globales (toutes catégories).
- * scope "title" = seulement si le TITRE matche (évite "vous reporterez au Head of Engineering").
+ * scope "title" = seulement si le TITRE matche.
  */
 export const GLOBAL_PENALTIES: Array<{ re: RegExp; pts: number; label: string; scope: "title" | "all" }> = [
-  { re: w("staff|principal|distinguished"), pts: 25, label: "Niveau Staff/Principal", scope: "title" },
-  { re: w("head of|director|directeur|directrice|vp|vice president|cto|chief"), pts: 30, label: "Poste de direction", scope: "title" },
+  { re: w("head of|director|directeur|directrice|vp|vice president|chief|general manager|gm"), pts: 35, label: "Poste de direction", scope: "title" },
   {
-    re: w("tech lead|lead tech(nique)?|lead dev(eloper|elopment)?|lead d[ée]v(eloppeur|eloppeuse)?|lead (software|full ?-?stack|front ?-?end|back ?-?end|ai|ia|sofe|web|mobile|platform)( engineer| developer| d[ée]veloppeur)?|lead engineer|(engineer(ing)?|developer|d[ée]veloppeur|full ?-?stack|software|front ?-?end|back ?-?end|ai|ia) (team )?lead|team lead|squad lead|engineering manager|(engineer|ing[ée]nieur|developer|d[ée]veloppeur)s? manager|manager d'[ée]quipe|team manager|people manager|responsable d'[ée]quipe"),
-    pts: 5,
-    label: "Poste de lead (toi : ~1 an de gestion de projet)",
+    re: w("(customer service|customer experience|guest relations|front office|reception|admin(istration)?|sales|leasing|operations|call cent(er|re)|contact cent(er|re)) manager|manager"),
+    pts: 15,
+    label: "Poste de manager (toi : team leader sur une mission)",
     scope: "title",
   },
+  { re: w("supervisor|team lead(er)?|superviseur"), pts: 5, label: "Poste de supervision", scope: "title" },
   {
-    re: w("fluent (german|dutch|spanish|italian|portuguese|polish|swedish|japanese)|(german|dutch|spanish|italian|portuguese|japanese) (is )?required|native (german|dutch|spanish)|allemand courant|deutsch|flie(ss|ß)end"),
+    re: w("(fluent|native|proficien(t|cy) in|speaking) (russian|chinese|mandarin|cantonese|hindi|urdu|tagalog|german|italian|spanish|portuguese|japanese|korean|turkish|farsi|persian|hebrew|dutch|polish)|(russian|chinese|mandarin|hindi|urdu|tagalog|german|italian|spanish|portuguese|japanese|korean|turkish|farsi|persian)[- ](speaking|speaker|is required|required|mandatory)"),
     pts: 30,
     label: "Autre langue requise",
+    scope: "all",
+  },
+  {
+    re: w("russian|chinese|mandarin|cantonese|hindi|urdu|tagalog|german|italian|spanish|portuguese|japanese|korean|turkish|farsi|persian|hebrew|dutch|polish|czech|greek|swedish|danish|norwegian|finnish|hungarian|romanian|bulgarian"),
+    pts: 30,
+    label: "Autre langue dans le titre",
+    scope: "title",
+  },
+  { re: w("native english( speaker)?|english native|english mother tongue"), pts: 8, label: "Anglais natif demandé (toi : courant, IELTS B2)", scope: "all" },
+  {
+    re: w("valid uae driving licen[cs]e|uae driving licen[cs]e (is )?(required|mandatory|a must|must)|must (have|hold) (a )?(valid )?(uae )?driving licen[cs]e"),
+    pts: Number(process.env.HAS_UAE_DRIVING_LICENSE === "true" ? 0 : 10),
+    label: "Permis de conduire UAE exigé",
+    scope: "all",
+  },
+  {
+    re: w("(\\d+)\\+? years? (of )?(uae|gcc|dubai|middle east|local) experience|(uae|gcc|dubai) experience (is )?(required|mandatory|a must)"),
+    pts: 6,
+    label: "Expérience UAE/GCC exigée (toi : depuis 2026)",
     scope: "all",
   },
 ];
 
 /**
- * Écosystèmes d'éditeurs que tu ne maîtrises pas (ERP, CRM, plateformes propriétaires).
- * Dans le TITRE → offre masquée (c'est le cœur du poste). Dans la description seulement → −vendorMentionPts.
- * HubSpot et Zoho n'y sont pas : tu les connais.
+ * Logiciels / écosystèmes métiers non maîtrisés : simple pénalité s'ils sont cités dans la description.
+ * (Dans le titre → offre masquée.)
  */
 export const VENDOR_ECOSYSTEMS =
-  /(^|[^a-z])(microsoft dynamics|dynamics 365|d365|business central|navision|sap|s\/4 ?hana|abap|salesforce|servicenow|oracle|sage x3|sage 100|cegid|odoo|workday (hcm|integrations?|financials|studio|adaptive|extend|prism|developer|consultant|admin\\w*|analyst|specialist|engineer)|guidewire|pega|sharepoint|power ?platform|power apps|power automate|magento|shopify|sitecore|adobe experience manager|aem|mulesoft|netsuite|infor|ifs)([^a-z]|$)/i;
-export const VENDOR_MENTION_PTS = 5;
+  /(^|[^a-z])(sap|oracle|tally|quickbooks|sage|zoho books|yardi|salesforce admin\w*)([^a-z]|$)/i;
+export const VENDOR_MENTION_PTS = 3;
 
 /**
- * Expérience de lead / management exigée par l'offre. Tu as ~1 an (gestion de projet en freelance).
- * - "N ans à encadrer / en tant que lead" avec N > myYears, ou "proven lead" → offre masquée
- * - mention vague ("management experience", "expérience en encadrement") → −mentionPts
+ * Expérience de management exigée par l'offre. Toi : ~1 an (team leader en événementiel, ponctuel).
  */
 export const LEAD_EXPERIENCE = {
   myYears: 1,
-  mentionPts: 8,
-  /** capture le nombre d'années */
+  mentionPts: 6,
   yearsRe:
-    /(\d+)\s*\+?\s*(?:years?|yrs?|ans|années)\s+(?:of\s+|d['’]\s*)?(?:experience\s+|exp[ée]rience\s+)?(?:(?:as\s+(?:a\s+)?|en\s+tant\s+que\s+|comme\s+|in\s+(?:a\s+)?)?(?:tech(?:nical)?\s+lead|team\s+lead|lead\s+dev(?:eloper)?|engineering\s+manager|lead|manager)\b|(?:leading|managing|mentoring\s+and\s+managing)\s+(?:a\s+team|teams|engineers|developers|people|a\s+squad|squads)|(?:de\s+|en\s+|du\s+)?(?:management|encadrement|people\s+management)\b(?!\s+(?:de\s+|des\s+|du\s+|d['’]\s*)?(?:projets?|programmes?|produits?|delivery|portefeuille)))/i,
-  strongRe: w("proven lead|proven track record (of )?(leading|managing) (engineers|developers|teams?|people)|(already|previously) (led|managed) (a team|teams|engineers|developers)"),
-  mentionRe: w("people management|management experience|(experience|track record) (leading|managing) (a team|teams|engineers|developers|people|a squad)|exp[ée]rience (r[ée]ussie |significative |confirm[ée]e )?(de|en|du|dans le) (management|encadrement)|encadrement d'(une )?[ée]quipe|d[ée]j[àa] (encadr[ée]|manag[ée])"),
+    /(\d+)\s*\+?\s*(?:years?|yrs?|ans|années)\s+(?:of\s+|d['’]\s*)?(?:experience\s+|exp[ée]rience\s+)?(?:(?:as\s+(?:a\s+)?|en\s+tant\s+que\s+|in\s+(?:a\s+)?)?(?:team\s+lead(?:er)?|supervisor|supervisory|manager|managerial|management)\b|(?:leading|managing|supervising)\s+(?:a\s+team|teams|staff|people))/i,
+  strongRe: w("proven (management|managerial|leadership) experience|proven track record (of )?(leading|managing) (teams?|people|staff)"),
+  mentionRe: w("people management|management experience|supervisory experience|(experience|track record) (leading|managing|supervising) (a team|teams|staff|people)"),
 };
 
-/** Exclusions dures (offre masquée) */
+/** Exclusions dures sur le titre (offre masquée) */
 export const HARD_EXCLUDE_TITLE: Array<[RegExp, string]> = [
-  [w("stage|stagiaire|intern|internship|alternan(ce|t)|apprenti(ssage)?|apprentice|working student|werkstudent"), "Stage / alternance"],
-  [w("account executive|sales development|sdr|bdr|business developer|commercial(e)?|recruiter|recruteur|talent acquisition|paralegal|legal counsel|accountant|comptable|designer|copywriter"), "Métier non ciblé"],
-  [/(^|[^a-z])marketing(?! ?op)/i, "Marketing (non ciblé)"],
-  [VENDOR_ECOSYSTEMS, "Écosystème éditeur non maîtrisé"],
-  [w("data scientist|data analyst|analytics engineer|research scientist|research engineer"), "Data science / analyse (non ciblé)"],
+  [w("intern|internship|trainee|stage|stagiaire|apprentice"), "Stage / alternance"],
+  [w("female|ladies|lady|filipina|office girl|office boy|tea ?boy"), "Profil restreint (genre / nationalité)"],
+  [w("uae ?nationals?|uaen|emirati|emiratisation|emiratization|national talent|nationals only"), "Réservé aux Émiratis"],
+  [
+    w("nurse|nursing|doctor|physician|dentist|dental assistant|pharmac(ist|y)|therapist|physiotherap\\w*|radiograph\\w*|lab technician|caregiver|nanny|babysitter|teacher|tutor|lecturer"),
+    "Métier médical / enseignement",
+  ],
+  [
+    w("chef|cook|commis|waiter|waitress|barista|bartender|steward|housekeep\\w*|cleaner|cleaning|laundry|room attendant|bell ?(boy|attendant|man)|valet|porter|driver|rider|courier|delivery|security guard|guard|technician|mechanic|electrician|plumber|carpenter|painter|mason|labou?rer|helper|cashier|storekeeper|merchandiser|picker|packer|warehouse|forklift"),
+    "Métier non ciblé (opérationnel)",
+  ],
+  [
+    w("developer|engineer|software|devops|data (scientist|analyst|engineer)|architect|designer|accountant|auditor|lawyer|advocate|paralegal|actuar\\w*|underwriter|recruiter|talent acquisition|hr (generalist|business partner)|marketing (manager|executive|specialist)|seo|graphic|video|photographer"),
+    "Métier non ciblé",
+  ],
+  [w("telesales|telemarket\\w*|cold call\\w*|door[- ]to[- ]door|field sales|insurance (sales|advisor|agent)|financial advisor|wealth|credit card sales|bank sales"), "Vente à la commission (non ciblé)"],
+  [VENDOR_ECOSYSTEMS, "Logiciel métier non maîtrisé"],
 ];
 
 /**
- * Diplôme : tu as un Bac+4 (RNCP niveau 6, École 42) + Licence Pro.
- * Pénalités quand l'offre demande un Bac+5 / Master / diplôme d'ingénieur.
+ * Exclusions dures sur la DESCRIPTION : restrictions de nationalité / genre fréquentes aux Émirats.
+ */
+export const HARD_EXCLUDE_DESCRIPTION: Array<[RegExp, string]> = [
+  [
+    /\b(uae nationals? only|only (for )?uae nationals?|emiratis? only|only emiratis?|open (only )?to (uae nationals?|emiratis?)|(for|exclusively for) (uae )?nationals|emiratisation (role|position|program)|this (role|position) is (open )?(only )?(to|for) (uae nationals?|emiratis?))\b/i,
+    "Réservé aux Émiratis",
+  ],
+  [/\b(female (candidates? )?only|only female|ladies only|female (applicants?|candidates?) (are )?(preferred|required)|looking for (a )?female)\b/i, "Réservé aux femmes"],
+  [
+    /\b(filipino|filipina|indian|pakistani|nepali|sri lankan|bangladeshi|russian|chinese|european|british|american|indonesian|kenyan|ugandan|nigerian) (nationals?|nationality|candidates?|applicants?)?\s*(only|preferred)\b/i,
+    "Nationalité spécifique demandée",
+  ],
+];
+
+/**
+ * Diplôme : Bachelor (Licence) en informatique industrielle (Nîmes) + Bachelor management (FSEG Sfax).
+ * Pénalité quand l'offre demande un Master / MBA.
  */
 export const EDUCATION = {
-  required: 12, // "De formation Bac+5", "Master requis"
-  preferred: 6, // "idéalement", "souhaité", "preferred"
-  equivalent: 4, // "ou équivalent", "or equivalent experience"
+  required: 12,
+  preferred: 5,
+  equivalent: 3,
 };
 
 /**
  * Expérience demandée par l'offre vs ton expérience dans le métier (seniority.years de la catégorie) :
  * au-delà → −moderate ; au-delà de +bigGap ans → −severe.
  */
-export const EXPERIENCE = { moderate: 10, severe: 20, bigGap: 3 };
+export const EXPERIENCE = { moderate: 8, severe: 18, bigGap: 3 };
 
 /** Mots du titre qui signalent un poste senior */
-export const SENIOR_TITLE = /(^|[^a-z])(senior|sr\.?|confirm[ée]e?|exp[ée]riment[ée]e?|group product|group pm)([^a-z]|$)/i;
+export const SENIOR_TITLE = /(^|[^a-z])(senior|sr\.?|confirm[ée]e?|exp[ée]riment[ée]e?)([^a-z]|$)/i;
 
 /** Titres encore plus hauts (utilisés pour les exclusions "pas ton profil") */
-export const VERY_SENIOR_TITLE = /(^|[^a-z])(lead|principal|staff|head|director|directeur|directrice|vp|chief|group)([^a-z]|$)/i;
+export const VERY_SENIOR_TITLE = /(^|[^a-z])(lead|principal|head|director|directeur|directrice|vp|chief|manager)([^a-z]|$)/i;
 
 /**
- * Fraîcheur : ajustement ajouté au score de fit selon l'âge de l'offre (date de publication,
- * sinon date de détection). [âge max en heures, points]. Recalculé toutes les 15 min.
+ * Fraîcheur : ajustement ajouté au score de fit selon l'âge de l'offre. [âge max en heures, points].
  */
 export const FRESHNESS: Array<[number, number]> = [
   [24, 5],
@@ -374,4 +374,13 @@ export const FRESHNESS: Array<[number, number]> = [
 ];
 
 /** Seuils de priorité (appliqués au score final = fit + fraîcheur) */
-export const PRIORITY = { P1: 75, P2: 60, P3: 45 };
+export const PRIORITY = { P1: 78, P2: 62, P3: 45 };
+
+/**
+ * Offre sans description complète (Careerjet ne donne qu'un extrait) : fit plafonné,
+ * pour qu'elle arrive dans le récap P2 plutôt qu'en alerte immédiate.
+ */
+export const PARTIAL_DESCRIPTION_MAX_FIT = 70;
+
+/** Fuseau horaire des récaps Telegram */
+export const TIMEZONE = "Asia/Dubai";
