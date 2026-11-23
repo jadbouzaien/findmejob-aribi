@@ -8,8 +8,5 @@ logs
 .DS_Store
 *.tsbuildinfo
 
-# CVs et données personnelles (non publiés)
-cvs/*.pdf
-cvs/src/data.mjs
-cvs/src/photo.jpg
+# HTML intermédiaire des CV (régénéré par build.mjs)
 cvs/src/html
